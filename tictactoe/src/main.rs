@@ -20,16 +20,13 @@ fn is_input_correct(board: &[[char; 3]; 3], c: char) -> bool {
     parse_cmd_to_pos(c).map_or(false, |(x, y)| board[x][y] == '_')
 }
 
-fn is_game_draw(board: &[[char; 3]; 3]) -> bool {
-    for row in *board {
-        for c in row {
-            if c == '_' {
-                return false;
-            }
-        }
-    }
-
-    true
+fn is_board_full(board: &[[char; 3]; 3]) -> bool {
+    board.iter()
+        .flatten()
+        .filter(|c| **c == '_')
+        .peekable()
+        .peek()
+        .is_none()
 }
 
 fn is_row_completed(board: &[[char; 3]; 3]) -> bool {
@@ -61,11 +58,14 @@ fn is_diag_completed(board: &[[char; 3]; 3]) -> bool {
     false
 }
 
-fn is_game_over(board: &[[char; 3]; 3]) -> bool {
-    is_game_draw(board) || 
-        is_row_completed(board) ||
+fn player_won(board: &[[char; 3]; 3]) -> bool {
+    is_row_completed(board) ||
         is_col_completed(board) ||
         is_diag_completed(board)
+}
+
+fn is_game_over(board: &[[char; 3]; 3]) -> bool {
+    is_board_full(board) || player_won(board)
 }
 
 fn player_move(board: &mut[[char; 3]; 3], player: i32, cmd: char) {
@@ -103,4 +103,10 @@ fn main() {
         current_player = 1 - current_player;
     }
     println!("game over");
+    current_player = 1 - current_player;
+    if player_won(&board) {
+        println!("player {} won!", current_player);
+    } else {
+        println!("Draw!");
+    }
 }
